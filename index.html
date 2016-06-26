@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
+    <head>
+        <title>Interactive Floorplanner</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link type="text/css" href="css/jquery.ui.theme.css" rel="stylesheet" />
+        <link type="text/css" href="css/jquery.ui.core.css" rel="stylesheet" />
+        <link type="text/css" href="css/jquery.ui.slider.css" rel="stylesheet" />
+        <link type="text/css" href="css/style.css" rel="stylesheet" />
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="js/jQueryRotate.2.1.js"></script>
+		<script type="text/javascript" src="js/custom.js"></script>
+    </head>
+    <body>
+		<form id="jsonform" action="/:3000/save" method="GET">
+			<input type="hidden" name="widthBackground" id="widthBackground" value="">
+			<input type="hidden" name="heightBackground" id="heightBackground" value="">
+			<div id="content">
+				<div id="background" class="background" style="background:url(images/backgroud_office.png) no-repeat;display:inline-block;background-size:contain "></div>
+				<div class="rightSidebar">
+					<div id="objects">
+						<div style="display:inline-block;">
+							<a href="#" style="text-decoration:none;color:black;"><h3>Modules</h3></a><br>
+							<div id="kitchen" style="display:block;">
+								<div class="obj_item" style="width:60px; height:60px"><img id="obj_3" width="50" height="50" class="ui-widget-content" src="images/table.png" alt="el"/></div>
+								<div class="obj_item" style="width:60px; height:60px"><img id="obj_3" width="50" height="50" class="ui-widget-content" src="images/desk.png" alt="el"/></div>
+								<div class="obj_item" style="width:60px; height:60px"><img id="obj_3" width="50" height="50" class="ui-widget-content" src="images/desk1.png" alt="el"/></div>
+								<div class="obj_item" style="width:60px; height:60px"><img id="obj_3" width="50" height="50" class="ui-widget-content" src="images/desk2.png" alt="el"/></div>		
+							</div>
+						</div>
+					</div>
+					<div id="stats"></div>
+					<div id="tools"></div>
+					<div id="actions">
+						<a id="submit">Save data</a>
+					</div>
+					<input id="jsondata" name="jsondata" type="hidden" value="" autocomplete="off"></input>
+				</div>
+			</div>
+		</form>
+	</body>
+</html>

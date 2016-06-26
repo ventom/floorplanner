@@ -1,0 +1,15 @@
+#!/bin/bash
+#Address of the watermark file
+# Check if the directory "watermarked" exists or create it
+mkdir watermarked
+#loop inside all the images in folder
+for image in *.png *.PNG
+do
+if [ ! -e "$image" ] # Check if file exists.
+then
+continue
+fi
+#Retrieve size of the image and divide the lenght by 2
+convert -gravity Center -pointsize 14 -annotate +0+0 "demo"  ${image} watermarked/${image}
+done
+#If you have installed zenity, a message will popup when the process is complete
