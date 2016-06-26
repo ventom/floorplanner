@@ -1,3 +1,8 @@
+// Config start
+
+var apiURL = 'http://127.0.0.1:3000';
+
+// Config end
 
 
 var data = {
@@ -205,7 +210,7 @@ function positionElement(options) {
 	$('#background').append('\
 		<div id="objID_'+options.id+'" class="clonedObject " style="top: '+options.top+'px; left: '+options.left+'px; overflow: visible;transform: rotate('+options.rotation+'deg);">\
 			<img id="obj_1" width="50" height="50" src="'+options.src+'" alt="el" style="margin: 0px; resize: none; position: static; zoom: 1; display: block; height: 50px; width: 50px;">\
-			<div class="customContent">'+(options.customData:'')+'</div>\
+			<div class="customContent">'+(options.customData?options.customData:'')+'</div>\
 			<div class="availability '+(options.available==0?'available':'busy')+'"></div>\
 		</div>');
 	setDraggableOptions(options.id)
