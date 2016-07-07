@@ -464,7 +464,6 @@ function reloadData(reloadOnly) {
 							var availableObj = {};
 							$.each(value.objects, function( indexObject, valueObject ) {
 								if(valueObject!=null) {
-									console.log(valueObject)
 									if(!totalObj[valueObject.tag])
 										totalObj[valueObject.tag] = 1;
 									else
@@ -505,12 +504,15 @@ function reloadData(reloadOnly) {
 								</tr>\
 							')
 						}
+						
 					}
 					
 				})
 				var tableContent = tableData.join('');
-				$('#dataTable').html(''+tableContent)
-				drawGraph(dataArray);
+				$('#dataTable').html(''+tableContent);
+
+				if(dataArray.length>0)
+					drawGraph(dataArray);
 				
 			}
 			if(!reloadOnly && dataReturned[0]) {
