@@ -12,6 +12,7 @@
   },
   "devDependencies": {},
   "scripts": {
+    "start-dev": "NODE_ENV=dev supervisor api/index.js & gulp livereload",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

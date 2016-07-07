@@ -2,7 +2,16 @@ var data = {
 	"images": [],
 	"items": {}
 };
-	
+
+var defaultTags = {
+	1:'Team 1',
+	2:'Team 2',
+	3:'Team 3',
+	4:'Team 4',
+}
+
+var dragCheck = false;
+var availability = 0;
 var clientID = getURLParams( 'client' );
 
 $(document).ready(function (id) {
@@ -21,7 +30,8 @@ $(document).ready(function (id) {
 	};
 	
 	/*  remove an object from data */
-	$('.remove',$('#tools')).live('click',function(){
+//	$('.remove',$('#tools')).live('click',function(){
+	$('.remove',$('#tools')).click(function(){
 		var $this = $(this);
 		
 		/* the element next to this is the input that stores the obj id */
@@ -157,12 +167,13 @@ $(document).ready(function (id) {
 		$.ajax({
 			url: apiURL+'/update',
 			dataType: "jsonp",
-			data: {'objects':data.items, 'clientID':clientID},
+			data: {'objects':data.items, 'clientID':clientID, 'busyRate':availability},
 			jsonpCallback: "_saveData",
 			cache: false,
 			timeout: 5000,
 			success: function(data) {
 				$("#test").append(data);
+				reloadData(1);
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
 				alert('error ' + textStatus + " " + errorThrown);
@@ -174,28 +185,8 @@ $(document).ready(function (id) {
 // 		$('#jsonform').submit();
 	});
 	
-	
-	$.ajax({
-		url: apiURL+'/objects',
-		dataType: "jsonp",
-		data: {'clientID':clientID},
-		jsonpCallback: "_getData",
-		cache: false,
-		timeout: 5000,
-		success: function(dataReturned) {
-			if(dataReturned[0]) {
-				$.each(dataReturned[0].objects, function( index, value ) {
-					data.items[value.id] = value;
-					positionElement(value);
-				})
-			}
-		},
-		error: function(jqXHR, textStatus, errorThrown) {
-			alert('error ' + textStatus + " " + errorThrown);
-		}
-	});
-
-	updateStats()
+	reloadData();
+	updateStats();
 });
 
 function positionElement(options) {
@@ -227,38 +218,69 @@ function setDraggableOptions(objID) {
 				data.items[objID].left = objleft;
 				data.items[objID].top = objtop;
 				
+				dragCheck = false;
 				
-			}
+				
+			},
+			drag: function(){
+				// On drag set that flag to true
+				dragCheck = true;
+			},
 		})
 		.draggable( "option", "containment", '#background' )
+		.click(function() {
+			if(!dragCheck) {
+				$('#item_'+objID).modal();
+				$('.modal').draggable({
+					drag: function(event, ui){
+						if(!$(this).hasClass('modal'))
+							return false;
+					}
+				});
+				$('#item_'+objID).on($.modal.AFTER_CLOSE, function(event, modal) {
+					$('#tools').append($('#item_'+objID));
+					$('#item_'+objID).removeClass('modal').attr('style', '');
+				});
+			}
+		})
 }
 
 function addToolBar(objid, draggable_elem, newObject) {
+	var tagContent = '';
+	$.each(defaultTags, function( index, value ) {
+		tagContent += '<option value="'+index+'">'+value+'</option>'
+	})
 	$('<div/>',{
-					className	:	'item'
+					class	:	'item',
+					id	:	'item_'+objid
 				})/*.append(
 					$('<div/>',{
-					className	:	'thumb',
+					class	:	'thumb',
 					html		:	'<img width="50" class="ui-widget-content" src="'+objsrc+'"></img>'
 					})
 				)*/.append(
 					$('<div/>',{
-						html		: 'User: <input type="text" name="user_"'+objid+'" id="user_'+objid+'" class="username" value="'+(data.items[objid].customData?data.items[objid].customData:'')+'">',
-						className		: 'userContent'
+						html		: 'User: <input type="text" name="user_"'+objid+'" id="user_'+objid+'" class="username user_'+objid+'" value="'+(data.items[objid].customData?data.items[objid].customData:'')+'">',
+						class		: 'userContent'
 					})
 				).append(
 					$('<div/>',{
-						className	:	'slider rotationSlider sliderUse'+objid,
+						html		: 'Team: <select name="tag_"'+objid+'" id="tag_'+objid+'" class="tagname tag_'+objid+'"">'+tagContent+'</select>',
+						class		: 'tagcontent'
+					})
+				).append(
+					$('<div/>',{
+						class	:	'slider rotationSlider sliderUse'+objid,
 						html		:	'<span>Rotate</span><input class="degrees" value="'+(data.items[objid].rotation?data.items[objid].rotation:0)+'">'
 					})
 				).append(
 					$('<div/>',{
-						className	:	'slider sizeSlider sliderUseSize'+objid,
+						class	:	'slider sizeSlider sliderUseSize'+objid,
 						html		:	'<span>Resize</span><input class="degrees" value="'+(data.items[objid].resize?data.items[objid].resize:0)+'">'
 					})
 				).append(
 					$('<a/>',{
-					className	:	'remove',
+					class	:	'remove',
 					objectID	:	objid
 				})
 				).append(
@@ -267,6 +289,11 @@ function addToolBar(objid, draggable_elem, newObject) {
 						value		:	objid		// keeps track of which object is associated
 					})
 				).appendTo($('#tools'));
+				
+				//set defaultElements
+				$('#item_'+objid+' #tag_'+objid).val(data.items[objid].tag)
+				
+				
 				$('.sliderUse'+objid).slider({
 					orientation	: 'horizontal',
 					max: 180,
@@ -313,7 +340,7 @@ function addToolBar(objid, draggable_elem, newObject) {
 					}
 				});
 				
-				$('#user_'+objid).keyup(function() {
+				$('.user_'+objid).keyup(function() {
 					$('#objID_'+objid+' .customContent').html($(this).val());
 					data.items[objid].customData = $(this).val();
 					if($(this).val()=='') {
@@ -327,6 +354,10 @@ function addToolBar(objid, draggable_elem, newObject) {
 						updateStats();
 					}
 				}).keyup();
+				
+				$('.tag_'+objid).change(function() {
+					data.items[objid].tag = $(this).val();
+				}).change();
 				
 				$(".rotationSlider .degrees").change(function () {
 					var value = this.value;
@@ -377,7 +408,7 @@ function updateStats() {
 	});
 	
 	
-	var availability = Math.round(((total-available)/total)*100, 2);
+	availability = Math.round(((total-available)/total)*100, 2);
 	if(total!=0)
 		$('#stats').html(available+' out of '+total+' available! Busy at '+availability+'%' );
 	else
@@ -394,4 +425,103 @@ function getURLParams( name )
     return "";
   else
     return results[1];
+}
+
+function reloadData(reloadOnly) {
+	$('#graphHolder').html('')
+	$.ajax({
+		url: apiURL+'/objects',
+		dataType: "jsonp",
+		data: {'clientID':clientID},
+		jsonpCallback: "_getData",
+		cache: false,
+		timeout: 5000,
+		success: function(dataReturned) {
+			if(dataReturned) {
+				var dataArray = []
+				var existingEntries = {};
+				var tableData = [];
+				var categoryItems = ''
+				$.each(defaultTags, function( tagindex, tagvalue) {
+					categoryItems +='<td>'+tagvalue+'</td>'
+				})
+				tableData.push('<tr>\
+									<td>Date</td>\
+									'+categoryItems+'\
+									<td>Total</td>\
+								</tr>')
+				$.each(dataReturned, function( index, value ) {
+					
+					if(value && value.dateStamp && value.busyRate) {
+						if(!existingEntries[value.dateStamp]) {
+							var dataObject = {
+								'date':value.dateStamp,
+								'Total': value.busyRate==0?1:value.busyRate
+							}
+							
+							var totalObj = {};
+							var busyObj = {};
+							var availableObj = {};
+							$.each(value.objects, function( indexObject, valueObject ) {
+								if(valueObject!=null) {
+									console.log(valueObject)
+									if(!totalObj[valueObject.tag])
+										totalObj[valueObject.tag] = 1;
+									else
+										totalObj[valueObject.tag]++;
+									
+									if(valueObject.available==1) {
+										if(!availableObj[valueObject.tag])
+											availableObj[valueObject.tag] = 1;
+										else
+											availableObj[valueObject.tag]++;
+									}
+									else {
+										if(!busyObj[valueObject.tag])
+											busyObj[valueObject.tag] = 1;
+										else
+											busyObj[valueObject.tag]++;
+									}
+								}
+							})
+							
+							
+							
+							var tableContent = '';
+							$.each(defaultTags, function( tagindex, tagvalue) {
+								var itemBusyRate = totalObj[tagindex]? Math.round(((totalObj[tagindex]-(availableObj[tagindex]?availableObj[tagindex]:0))/totalObj[tagindex])*100, 2):'';
+								dataObject[tagvalue] = itemBusyRate;
+								tableContent += '<td>'+itemBusyRate+'</td>'
+							})
+							dataArray.push(dataObject)
+							existingEntries[value.dateStamp] = 1;
+							
+							
+							tableData.push('\
+								<tr>\
+									<td>'+value.dateStamp+'</td>\
+									'+tableContent+'\
+									<td>'+value.busyRate+'</td>\
+								</tr>\
+							')
+						}
+					}
+					
+				})
+				var tableContent = tableData.join('');
+				$('#dataTable').html(''+tableContent)
+				drawGraph(dataArray);
+				
+			}
+			if(!reloadOnly && dataReturned[0]) {
+				$.each(dataReturned[0].objects, function( index, value ) {
+					data.items[value.id] = value;
+					positionElement(value);
+				})
+			}
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			alert('error ' + textStatus + " " + errorThrown);
+		}
+	});
 }
