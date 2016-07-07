@@ -7,6 +7,7 @@
     "express": "^4.14.0",
     "gulp": "^3.9.0",
     "gulp-livereload": "^3.8.1",
+    "jquery-modal": "^0.7.0",
     "mongodb": "^2.1.18",
     "supervisor": "^0.11.0"
   },
