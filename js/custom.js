@@ -29,42 +29,8 @@ $(document).ready(function (id) {
 	  return this.push.apply(this, rest);
 	};
 	
-	/*  remove an object from data */
-//	$('.remove',$('#tools')).live('click',function(){
-	$('.remove',$('#tools')).click(function(){
-		var $this = $(this);
-		
-		/* the element next to this is the input that stores the obj id */
-		var objid = $this.next().val();
-		/* remove the object from the sidebar */
-		$this.parent().remove();
-		/* ,from the picture */
-		
-		var divwrapper = $('#'+objid).parent().parent();
-// 		$('#'+objid).remove();
-		/* add again to the objects list */
-
-		var image_elem 		= $this.parent().find('img');
-		var thumb_src 		= image_elem.attr('src');
-		var divPosition = $('#imgShow'+objid).offset();
-		
-
-		/* and unregister it - delete from object data */
-		var index = exist_object(objid);
-		data.images.remove(index);
-		$('#objID_'+$(this).attr('objectID')).remove();
- 		data.items[$(this).attr('objectID')] = null;
-		updateStats();
-	});
                 
-	/*  checks if an object was already registered */
-	function exist_object(id){
-		for(var i = 0;i<data.images.length;++i){
-			if(data.images[i].id == id)
-				return i;
-			}
-			return -1;
-	}
+
 	
 	/* triggered when stop resizing an object */
 	function resizestop(event, ui) {
@@ -292,6 +258,30 @@ function addToolBar(objid, draggable_elem, newObject) {
 				
 				//set defaultElements
 				$('#item_'+objid+' #tag_'+objid).val(data.items[objid].tag)
+				
+				
+				$('.remove',$('#tools')).click(function(){
+					var $this = $(this);
+					
+					console.log($this.attr('objectid'))
+					/* the element next to this is the input that stores the obj id */
+					var objid = $this.next().val();
+					/* remove the object from the sidebar */
+					$this.parent().remove();
+
+					var image_elem 		= $this.parent().find('img');
+					var thumb_src 		= image_elem.attr('src');
+					var divPosition = $('#imgShow'+objid).offset();
+					
+
+					/* and unregister it - delete from object data */
+					var index = exist_object(objid);
+					//data.images.remove(index);
+					$('#objID_'+$(this).attr('objectID')).remove();
+					console.log(data.items);
+					delete data.items[$(this).attr('objectID')]
+					updateStats();
+				});
 				
 				
 				$('.sliderUse'+objid).slider({
@@ -527,3 +517,12 @@ function reloadData(reloadOnly) {
 		}
 	});
 }
+
+	/*  checks if an object was already registered */
+	function exist_object(id){
+		for(var i = 0;i<data.images.length;++i){
+			if(data.images[i].id == id)
+				return i;
+			}
+			return -1;
+	}
