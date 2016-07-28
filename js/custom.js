@@ -10,11 +10,29 @@ var defaultTags = {
 	4:'Team 4',
 }
 
+var tagColours = {
+	1:getRandomColor(),
+	2:getRandomColor(),
+	3:getRandomColor(),
+	4:getRandomColor(),
+}
+
 var dragCheck = false;
 var availability = 0;
 var clientID = getURLParams( 'client' );
 
 $(document).ready(function (id) {
+	var styleContent = '';
+	for(colorIndex in tagColours){
+		styleContent += ' .tag_'+colorIndex+'{background-color:'+tagColours[colorIndex]+'}';
+	}
+	
+	var style = document.createElement('style');
+	style.type = 'text/css';
+	style.innerHTML = styleContent;
+	document.getElementsByTagName('head')[0].appendChild(style);
+
+	
 	var IDcounter = 0;
 	$('.ui-widget-content').each(function(index) {
 		IDcounter++;
@@ -79,7 +97,7 @@ $(document).ready(function (id) {
 						   
 			var objid		= draggable_elem.find('.ui-widget-content').attr('id')+'_'+makeid();
 			
-			$( "<div id='objID_"+objid+"' class='clonedObject'></div>" ).html( ui.draggable.html()+'<div class="customContent"></div><div class="availability"></div>' ).appendTo( this );
+			$( "<div id='objID_"+objid+"' class='clonedObject'></div>" ).html( ui.draggable.html()+'<div class="customContent"></div><div class="availability"></div><div class="tags"></div>' ).appendTo( this );
 			$( "#objID_"+objid ).css( 
 				{
 					'top' 		: objtop,
@@ -126,6 +144,24 @@ $(document).ready(function (id) {
 			}
 		}
 	});
+	
+	$('#export').bind('click',function(){
+		location.href=apiURL+'/exportCSV?clientID='+clientID;
+// 		$.ajax({
+// 			url: apiURL+'/exportCSV',
+// 			dataType: "jsonp",
+// 			data: {'clientID':clientID},
+// 			jsonpCallback: "_saveData",
+// 			cache: false,
+// 			timeout: 15000,
+// 			success: function(data) {
+// 				
+// 			},
+// 			error: function(jqXHR, textStatus, errorThrown) {
+// 				alert('error ' + textStatus + " " + errorThrown);
+// 			}
+// 		});
+	});
 
 	/* User presses the download button */
 	$('#submit').bind('click',function(){
@@ -136,7 +172,7 @@ $(document).ready(function (id) {
 			data: {'objects':data.items, 'clientID':clientID, 'busyRate':availability},
 			jsonpCallback: "_saveData",
 			cache: false,
-			timeout: 5000,
+			timeout: 15000,
 			success: function(data) {
 				$("#test").append(data);
 				reloadData(1);
@@ -162,6 +198,7 @@ function positionElement(options) {
 			<img id="obj_1" width="50" height="50" src="'+options.src+'" alt="el" style="margin: 0px; resize: none; position: static; zoom: 1; display: block; height: 50px; width: 50px;">\
 			<div class="customContent">'+(options.customData?options.customData:'')+'</div>\
 			<div class="availability '+(options.available==0?'available':'busy')+'"></div>\
+			<div class="tags '+(options.tag?'tag_'+options.tag:'')+'"></div>\
 		</div>');
 	setDraggableOptions(options.id)
 	$('#objID_'+options.id)
@@ -525,4 +562,13 @@ function reloadData(reloadOnly) {
 				return i;
 			}
 			return -1;
+	}
+	
+	function getRandomColor() {
+		var letters = '0123456789ABCDEF';
+		var color = '#';
+		for (var i = 0; i < 6; i++ ) {
+			color += letters[Math.floor(Math.random() * 16)];
+		}
+		return color;
 	}

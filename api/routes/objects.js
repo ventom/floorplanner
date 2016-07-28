@@ -28,6 +28,99 @@ exports.findAll = function(req, res) {
     });
 };
 
+exports.exportCSV = function(req, res) {
+	var now = new Date();
+	var dateStamp = now.getFullYear().toString()+(now.getMonth()+1).toString()+now.getDate().toString()+now.getHours().toString()+now.getMinutes().toString()+now.getSeconds().toString();
+	res.setHeader('Content-disposition', 'attachment; filename=fileExport_'+dateStamp+'.csv');
+	db.collection('data', function(err, collection) {
+        collection.find({'clientID':req.query.clientID}).sort({timeStamp:-1}).toArray(function(err, items) {
+			var existingEntries = {};
+			var categoryItems = ''
+			var tagsFound = {};
+			var busyData = [];
+			var returnArray = [];
+			var dataArray = [];
+			for (var index in items) {
+					var value = items[index];
+					if(value && value.dateStamp && value.busyRate) {
+						if(!existingEntries[value.dateStamp]) {
+							var dataObject = {
+								'date':value.dateStamp,
+								'Total': value.busyRate==0?1:value.busyRate
+							}
+							
+							var totalObj = {};
+							var busyObj = {};
+							var availableObj = {};
+							var tagsFoundCurrent = {};
+							
+							for (var indexObject in value.objects) {
+								var valueObject = value.objects[indexObject]
+								if(valueObject.tag!=undefined) {
+									tagsFound[valueObject.tag] = 1;
+									tagsFoundCurrent[valueObject.tag] = 1;
+
+									if(valueObject!=null) {
+										if(!totalObj[valueObject.tag])
+											totalObj[valueObject.tag] = 1;
+										else
+											totalObj[valueObject.tag]++;
+										
+										if(valueObject.available==1) {
+											if(!availableObj[valueObject.tag])
+												availableObj[valueObject.tag] = 1;
+											else
+												availableObj[valueObject.tag]++;
+										}
+										else {
+											if(!busyObj[valueObject.tag])
+												busyObj[valueObject.tag] = 1;
+											else
+												busyObj[valueObject.tag]++;
+										}
+									}
+								}
+							}
+							
+							
+							for(tagindex in tagsFoundCurrent) {
+								var itemBusyRate = totalObj[tagindex]? Math.round(((totalObj[tagindex]-(availableObj[tagindex]?availableObj[tagindex]:0))/totalObj[tagindex])*100, 2):'';
+								dataObject[tagindex] = itemBusyRate;
+							}
+							dataArray.push(dataObject)
+							existingEntries[value.dateStamp] = 1;
+
+						}
+						
+					}
+					
+			}
+			
+			returnArray[0] = [];
+			returnArray[0].push('Date');
+			for(tag in tagsFound) {
+				returnArray[0].push(tag);
+			}
+			returnArray[0].push('Total');
+			
+			for(dataIndex in dataArray) {
+				var arrayData = []
+				arrayData.push(dataArray[dataIndex].date)
+				for(tag in tagsFound) {
+					arrayData.push(dataArray[dataIndex][tag]?dataArray[dataIndex][tag]:0);
+				}
+				arrayData.push(dataArray[dataIndex].Total)
+
+				returnArray.push(arrayData);
+			}
+
+			
+			//res.jsonp('test')
+            res.csv(returnArray);
+        });
+    });
+};
+
 exports.fillDummyData = function(req, res) {
   
     db.collection('data', function(err, collection) { 
